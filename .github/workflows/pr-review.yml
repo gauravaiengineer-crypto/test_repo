@@ -41,7 +41,7 @@ jobs:
             -name="ruff" \
             -reporter=github-pr-review \
             -filter-mode=added \
-            -fail-on-error=true \
+            -fail-level=any \
             < ruff.out
 
       - name: Bandit
@@ -60,5 +60,5 @@ jobs:
             -name="bandit" \
             -reporter=github-pr-review \
             -filter-mode=added \
-            -fail-on-error=true \
+            -fail-level=any \
             < bandit.out
