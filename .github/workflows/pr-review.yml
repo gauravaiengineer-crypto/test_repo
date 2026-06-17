@@ -23,7 +23,9 @@ jobs:
           python-version: "3.11.6"
           cache: "pip"
 
-      - run: pip install ruff bandit reviewdog
+      - run: pip install ruff bandit 
+
+      - uses: reviewdog/action-setup@v1
 
 
       - name: Ruff
