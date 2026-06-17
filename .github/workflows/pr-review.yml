@@ -25,40 +25,23 @@ jobs:
 
       - run: pip install ruff bandit 
 
-      - uses: reviewdog/action-setup@v1
-
+      - name: Get changed Python files
+        id: changed
+        run: |
+          echo "files=$(git diff --name-only origin/main...HEAD -- '*.py' | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: Ruff
         run: |
-          ruff check . --output-format=rdjson > ruff.out || true
-
-      - name: Reviewdog Ruff
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          reviewdog \
-            -f=rdjson \
-            -name="ruff" \
-            -reporter=github-pr-review \
-            -filter-mode=added \
-            -fail-level=any \
-            < ruff.out
+          if [ -n "${{ steps.changed.outputs.files }}" ]; then
+            ruff check ${{ steps.changed.outputs.files }}
+          else
+            echo "No Python files changed."
+          fi
 
       - name: Bandit
         run: |
-          bandit -r . -f custom \
-            --msg-template="{abspath}:{line}: {test_id}: {msg}" \
-            > bandit.out || true
-
-      - name: Reviewdog Bandit
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          reviewdog \
-            -f=errorformat \
-            -efm="%f:%l: %m" \
-            -name="bandit" \
-            -reporter=github-pr-review \
-            -filter-mode=added \
-            -fail-level=any \
-            < bandit.out
+          if [ -n "${{ steps.changed.outputs.files }}" ]; then
+            bandit ${{ steps.changed.outputs.files }}
+          else
+            echo "No Python files changed."
+          fi
