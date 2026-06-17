@@ -28,26 +28,19 @@ jobs:
       - uses: reviewdog/action-setup@v1
 
 
-      - name: Ruff
-        run: |
-          ruff check . --output-format=github > ruff.out || true
-
-      - name: Reviewdog Ruff
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          reviewdog \
-            -f=github \
-            -name="ruff" \
-            -reporter=github-pr-review \
-            -filter-mode=added \
-            -fail-on-error=true \
-            < ruff.out
+      - name: Ruff Review
+        uses: reviewdog/action-ruff@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: added
+          fail_on_error: true
+          ruff_flags: .
 
       - name: Bandit
         run: |
           bandit -r . -f custom \
-            --msg-template="{abspath}:{line}: {test_id} {msg}" \
+            --msg-template="{abspath}:{line}: {test_id}: {msg}" \
             > bandit.out || true
 
       - name: Reviewdog Bandit
