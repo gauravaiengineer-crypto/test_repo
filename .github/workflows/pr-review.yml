@@ -1,0 +1,64 @@
+name: PR Review
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.6"
+          cache: "pip"
+
+      - run: pip install ruff bandit 
+
+      - uses: reviewdog/action-setup@v1
+
+
+      - name: Ruff
+        run: |
+          ruff check . --output-format=rdjson > ruff.out || true
+
+      - name: Reviewdog Ruff
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reviewdog \
+            -f=rdjson \
+            -name="ruff" \
+            -reporter=github-pr-review \
+            -filter-mode=added \
+            -fail-level=any \
+            < ruff.out
+
+      - name: Bandit
+        run: |
+          bandit -r . -f custom \
+            --msg-template="{abspath}:{line}: {test_id}: {msg}" \
+            > bandit.out || true
+
+      - name: Reviewdog Bandit
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reviewdog \
+            -f=errorformat \
+            -efm="%f:%l: %m" \
+            -name="bandit" \
+            -reporter=github-pr-review \
+            -filter-mode=added \
+            -fail-level=any \
+            < bandit.out

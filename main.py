@@ -1,6 +1,18 @@
 import os
 import json
+import random
 
-password = "admin123"
+password = "secret123"
 
 print("hello")
+
+
+def hello():
+    print("jaggu")
+
+
+def printme():
+    print("hhhhhh")
+
+password = "secret123"
+unused = 1
