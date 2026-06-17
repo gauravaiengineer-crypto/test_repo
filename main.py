@@ -14,4 +14,5 @@ def hello():
 def printme():
     print("hhhhhh")
 
-
+password = "secret123"
+unused = 1
